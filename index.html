@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>遊戲小站</title>
+<meta name="description" content="用 Godot 和 AI 做的原創小遊戲合集：數學雷電、猜國旗、精靈大賽車、快打英雄、星裂大陸。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1020;
+    --bg2: #161a33;
+    --card: #1b2040;
+    --line: #2d3466;
+    --text: #eef0ff;
+    --muted: #a9afd6;
+    --gold: #ffc94d;
+    --accent: #ff6b4a;
+    --chip: #262d5a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Noto Sans TC", system-ui, sans-serif;
+    color: var(--text);
+    background: radial-gradient(1200px 600px at 50% -10%, #2a2f6b 0%, transparent 60%), var(--bg);
+    min-height: 100vh;
+  }
+  header {
+    text-align: center;
+    padding: 56px 16px 28px;
+  }
+  header h1 {
+    margin: 0;
+    font-size: clamp(34px, 7vw, 60px);
+    font-weight: 900;
+    letter-spacing: 0.06em;
+    background: linear-gradient(180deg, #fff3c4, var(--gold) 55%, #e08a1e);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  header p { margin: 12px auto 0; max-width: 640px; color: var(--muted); line-height: 1.7; }
+  main {
+    max-width: 1180px;
+    margin: 0 auto;
+    padding: 8px 16px 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 22px;
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    transition: transform .18s ease, box-shadow .18s ease, border-color .18s;
+  }
+  .card:hover { transform: translateY(-4px); box-shadow: 0 14px 34px rgba(0,0,0,.45); border-color: #4b56a8; }
+  .thumb { position: relative; aspect-ratio: 16 / 9; background: #000; }
+  .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .badge {
+    position: absolute; top: 12px; left: 12px;
+    background: var(--accent); color: #fff; font-weight: 700; font-size: 13px;
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .body { padding: 16px 18px 18px; display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  .name { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .name h2 { margin: 0; font-size: 24px; }
+  .name span { color: var(--muted); font-size: 14px; }
+  .desc { margin: 0; color: #d4d8f5; line-height: 1.65; font-size: 15px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip { background: var(--chip); color: #c9cff5; font-size: 13px; padding: 3px 10px; border-radius: 999px; }
+  .keys { font-size: 13px; color: var(--muted); line-height: 1.6; }
+  .play {
+    margin-top: auto;
+    display: inline-flex; justify-content: center; align-items: center; gap: 8px;
+    background: linear-gradient(180deg, #ffd66b, #f0a020);
+    color: #2a1600; font-weight: 900; font-size: 18px; text-decoration: none;
+    padding: 12px 16px; border-radius: 10px;
+  }
+  .play:hover { filter: brightness(1.08); }
+  .play:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+  .notes {
+    max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; color: var(--muted); font-size: 14px; line-height: 1.8;
+  }
+  .notes div { background: var(--bg2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+  @media (max-width: 400px) {
+    main { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>遊戲小站</h1>
+  <p>用 Godot 遊戲引擎和 AI 一起做的原創小遊戲。選一個開始玩吧！</p>
+</header>
+
+<main>
+  <article class="card">
+    <div class="thumb"><img src="img/starrift.jpg" alt="星裂大陸標題畫面：兩大陣營的英雄與虛空龍" loading="lazy"><span class="badge">NEW</span></div>
+    <div class="body">
+      <div class="name"><h2>星裂大陸</h2><span>Starrift Online</span></div>
+      <p class="desc">奇幻角色扮演冒險。選擇曙光聯盟或赤焰部族、六種族四職業，接任務練功，組隊挑戰地城與虛空龍團隊副本，到競技場和戰場為陣營爭光。</p>
+      <div class="chips"><span class="chip">角色扮演</span><span class="chip">任務與副本</span><span class="chip">PvP</span><span class="chip">自動存檔</span></div>
+      <div class="keys">WASD 移動・點怪或 Tab 選目標・1～4 技能・E 對話（手機有搖桿）</div>
+      <a class="play" href="https://kevinchang0531.github.io/starrift/">開始玩 ▶</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="thumb"><img src="img/street-heroes.jpg" alt="快打英雄標題畫面" loading="lazy"></div>
+    <div class="body">
+      <div class="name"><h2>快打英雄</h2><span>Street Heroes</span></div>
+      <p class="desc">2D 對戰格鬥遊戲，20 位原創角色，單人闖關打到最後的暗影分身，也能兩人同樂。</p>
+      <div class="chips"><span class="chip">格鬥</span><span class="chip">20 位角色</span><span class="chip">雙人對戰</span></div>
+      <div class="keys">AD 走、W 跳・J 拳、K 腳、L 必殺技（手機有螢幕按鈕）</div>
+      <a class="play" href="https://kevinchang0531.github.io/street-heroes/">開始玩 ▶</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="thumb"><img src="img/critter-kart.jpg" alt="精靈大賽車標題畫面：可愛精靈開卡丁車" loading="lazy"></div>
+    <div class="body">
+      <div class="name"><h2>精靈大賽車</h2><span>Critter Kart</span></div>
+      <p class="desc">3D 卡丁車競速，12 隻原創精靈、3 條賽道，甩尾集氣、7 種道具，大獎賽連跑 3 場拿獎盃。</p>
+      <div class="chips"><span class="chip">競速</span><span class="chip">道具</span><span class="chip">大獎賽</span></div>
+      <div class="keys">方向鍵開車・空白鍵甩尾・Z 用道具（手機有螢幕按鈕）</div>
+      <a class="play" href="https://kevinchang0531.github.io/critter-kart/">開始玩 ▶</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="thumb"><img src="img/math-raiden.jpg" alt="數學雷電：戰機飛越海島" loading="lazy"></div>
+    <div class="body">
+      <div class="name"><h2>數學雷電</h2><span>Math Raiden</span></div>
+      <p class="desc">雷電風格射擊遊戲。撿到道具要答對 20 以內的加減題才能升級武器，還有線上排行榜。</p>
+      <div class="chips"><span class="chip">射擊</span><span class="chip">數學練習</span><span class="chip">國小一、二年級</span><span class="chip">線上排行榜</span></div>
+      <div class="keys">方向鍵或 WASD 移動・自動射擊・X 炸彈（手機有觸控方向鍵）</div>
+      <a class="play" href="https://kevinchang0531.github.io/math-raiden/">開始玩 ▶</a>
+    </div>
+  </article>
+
+  <article class="card">
+    <div class="thumb"><img src="img/flag-quiz.jpg" alt="猜國旗大挑戰：貓頭鷹吉祥物與世界地圖" loading="lazy"></div>
+    <div class="body">
+      <div class="name"><h2>猜國旗大挑戰</h2><span>Flag Quiz</span></div>
+      <p class="desc">四選一猜國旗，全世界 197 國加上歷史國旗，中英對照，每回 30 題、連對加分。</p>
+      <div class="chips"><span class="chip">益智</span><span class="chip">地理</span><span class="chip">中英對照</span></div>
+      <div class="keys">滑鼠或手指點選答案</div>
+      <a class="play" href="https://kevinchang0531.github.io/flag-quiz/">開始玩 ▶</a>
+    </div>
+  </article>
+</main>
+
+<section class="notes">
+  <div>
+    小提醒：第一次打開遊戲要下載 40～70 MB，請稍等一下；建議用電腦的 Chrome 或 Edge。
+    遊戲紀錄存在你自己的瀏覽器裡（換電腦或清除瀏覽資料就會不見）。輸入名字時請用暱稱或座號，不要用真實姓名。
+    所有角色、美術與音樂都是原創（圖片由 AI 生成、音樂音效由程式合成）。
+  </div>
+</section>
+</body>
+</html>
