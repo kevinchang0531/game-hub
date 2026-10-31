@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>遊戲小站</title>
-<meta name="description" content="用 Godot 和 AI 做的原創小遊戲合集：數學雷電、猜國旗、精靈大賽車、快打英雄、星裂大陸、燼淵：魂誓。">
+<meta name="description" content="用 Godot 和 AI 做的原創小遊戲合集，還有許願池：數學雷電、猜國旗、精靈大賽車、快打英雄、星裂大陸、燼淵：魂誓。">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700;900&display=swap" rel="stylesheet">
@@ -89,6 +89,31 @@
     max-width: 1180px; margin: 0 auto; padding: 0 16px 48px; color: var(--muted); font-size: 14px; line-height: 1.8;
   }
   .notes div { background: var(--bg2); border: 1px solid var(--line); border-radius: 12px; padding: 14px 18px; }
+  .wish-link { display: inline-block; margin-top: 14px; color: var(--gold); font-weight: 700; text-decoration: none; }
+  .wish-link:hover { text-decoration: underline; }
+  .wish { max-width: 1180px; margin: 0 auto; padding: 0 16px 40px; }
+  .wish-box { background: var(--bg2); border: 1px solid var(--line); border-radius: 16px; padding: 20px; }
+  .wish-box h2 { margin: 0; font-size: 26px; }
+  .wish-box > p { margin: 8px 0 16px; color: var(--muted); line-height: 1.7; }
+  .wish-form { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .wish-form label { display: flex; flex-direction: column; gap: 6px; color: var(--muted); font-size: 14px; }
+  .wish-form .wide { grid-column: 1 / -1; }
+  .wish-form input, .wish-form select, .wish-form textarea, .wish-tools select {
+    font: inherit; color: var(--text); background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 10px; width: 100%;
+  }
+  .wish-form textarea { min-height: 96px; resize: vertical; }
+  .wish-send { justify-self: start; border: 0; cursor: pointer; background: linear-gradient(180deg, #ffd66b, #f0a020); color: #2a1600; font: inherit; font-weight: 900; padding: 10px 22px; border-radius: 10px; }
+  .wish-send:disabled { opacity: .6; cursor: default; }
+  #wishMsg { align-self: center; color: var(--gold); margin: 0; }
+  .wish-tools { margin: 20px 0 12px; max-width: 320px; }
+  .wish-item { display: flex; justify-content: space-between; align-items: center; gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); }
+  .wish-main { min-width: 0; }
+  .wish-meta { color: var(--muted); font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; }
+  .wish-meta b { color: var(--gold); }
+  .wish-text { margin: 4px 0 0; line-height: 1.6; overflow-wrap: anywhere; white-space: pre-wrap; }
+  .wish-like { flex: none; min-height: 40px; min-width: 72px; background: var(--chip); color: var(--text); border: 1px solid var(--line); border-radius: 999px; font: inherit; cursor: pointer; padding: 4px 12px; }
+  .wish-like:disabled { opacity: .6; cursor: default; }
+  @media (max-width: 560px) { .wish-form { grid-template-columns: 1fr; } }
   @media (max-width: 400px) {
     main { grid-template-columns: 1fr; }
   }
@@ -98,6 +123,7 @@
 <header>
   <h1>遊戲小站</h1>
   <p>用 Godot 遊戲引擎和 AI 一起做的原創小遊戲。選一個開始玩吧！</p>
+  <a class="wish-link" href="#wish">許願池：告訴我們想改什麼</a>
 </header>
 
 <main>
@@ -201,6 +227,22 @@
   </article>
 </main>
 
+<section class="wish" id="wish">
+  <div class="wish-box">
+    <h2>許願池</h2>
+    <p>想改什麼、想加什麼？選一款遊戲寫下來，也可以附議別人的願望。請用暱稱或座號，不要留真實姓名或聯絡方式。</p>
+    <form class="wish-form" id="wishForm">
+      <label>暱稱<input id="wishName" maxlength="12" required autocomplete="off"></label>
+      <label>哪款遊戲<select id="wishGame"></select></label>
+      <label class="wide">你的願望<textarea id="wishText" minlength="2" maxlength="300" required></textarea></label>
+      <button class="wish-send" id="wishSend" type="submit">許願</button>
+      <p id="wishMsg" role="status"></p>
+    </form>
+    <div class="wish-tools"><select id="wishFilter" aria-label="篩選遊戲"></select></div>
+    <div id="wishList">載入中…</div>
+  </div>
+</section>
+
 <section class="notes">
   <div>
     小提醒：第一次打開遊戲要下載 40～70 MB，請稍等一下；建議用電腦的 Chrome 或 Edge。
@@ -208,5 +250,90 @@
     所有角色、美術與音樂都是原創（圖片由 AI 生成、音樂音效由程式合成）。
   </div>
 </section>
+<script>
+(function () {
+  var COL = location.search.indexOf("wishtest") >= 0 ? "hub_wishes_test" : "hub_wishes";
+  var BASE = "https://firestore.googleapis.com/v1/projects/math-raiden-2026/databases/(default)/documents/" + COL;
+  var games = Array.prototype.map.call(document.querySelectorAll(".card h2"), function (h) { return h.textContent; });
+  games.push("遊戲小站");
+  var $ = function (id) { return document.getElementById(id); };
+  var wishes = [];
+  games.forEach(function (g) { $("wishGame").add(new Option(g, g)); });
+  $("wishFilter").add(new Option("全部遊戲", ""));
+  games.forEach(function (g) { $("wishFilter").add(new Option(g, g)); });
+
+  function liked() {
+    try { return JSON.parse(localStorage.getItem("hubLiked") || "[]"); } catch (e) { return []; }
+  }
+  function remember(id) {
+    try { localStorage.setItem("hubLiked", JSON.stringify(liked().concat(id))); } catch (e) {}
+  }
+  function parse(doc) {
+    var f = doc.fields;
+    return { path: doc.name, id: doc.name.split("/").pop(), nickname: f.nickname.stringValue, game: f.game.stringValue,
+      text: f.text.stringValue, likes: Number(f.likes.integerValue), created: f.created.timestampValue };
+  }
+  function render() {
+    var box = $("wishList"), filter = $("wishFilter").value, seen = liked();
+    box.textContent = "";
+    var rows = wishes.filter(function (w) { return !filter || w.game === filter; });
+    if (!rows.length) {
+      var empty = document.createElement("p");
+      empty.textContent = "還沒有願望，來許第一個吧！";
+      box.appendChild(empty);
+    }
+    rows.forEach(function (w) {
+      var item = document.createElement("article"), main = document.createElement("div"), meta = document.createElement("div");
+      var game = document.createElement("b"), text = document.createElement("p"), like = document.createElement("button");
+      item.className = "wish-item"; main.className = "wish-main"; meta.className = "wish-meta"; text.className = "wish-text"; like.className = "wish-like";
+      game.textContent = w.game;
+      meta.appendChild(game);
+      meta.appendChild(document.createTextNode(w.nickname + "・" + w.created.slice(0, 10)));
+      text.textContent = w.text;
+      like.textContent = "附議 " + w.likes;
+      like.type = "button";
+      like.setAttribute("aria-label", "附議，目前 " + w.likes + " 票");
+      like.disabled = seen.indexOf(w.id) >= 0;
+      like.addEventListener("click", function () { vote(w, like); });
+      main.appendChild(meta); main.appendChild(text); item.appendChild(main); item.appendChild(like); box.appendChild(item);
+    });
+  }
+  function load() {
+    return fetch(BASE + "?pageSize=300&orderBy=created%20desc").then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      return r.json();
+    }).then(function (j) {
+      wishes = (j.documents || []).map(parse);
+      render();
+    }).catch(function () { $("wishList").textContent = "許願池暫時連不上，請稍後再試。"; });
+  }
+  function vote(w, btn) {
+    btn.disabled = true;
+    var body = { fields: { likes: { integerValue: String(w.likes + 1) } } };
+    var url = "https://firestore.googleapis.com/v1/" + w.path + "?updateMask.fieldPaths=likes&currentDocument.exists=true";
+    fetch(url, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      remember(w.id);
+      return load();
+    }).catch(function () { btn.disabled = false; load(); });
+  }
+  $("wishFilter").addEventListener("change", render);
+  $("wishForm").addEventListener("submit", function (e) {
+    e.preventDefault();
+    var name = $("wishName").value.trim(), text = $("wishText").value.trim();
+    if (!name || text.length < 2) { $("wishMsg").textContent = "請填暱稱和願望內容。"; return; }
+    $("wishSend").disabled = true;
+    var body = { fields: { nickname: { stringValue: name }, game: { stringValue: $("wishGame").value }, text: { stringValue: text },
+      likes: { integerValue: "0" }, created: { timestampValue: new Date().toISOString() } } };
+    fetch(BASE, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) }).then(function (r) {
+      if (!r.ok) throw new Error(r.status);
+      $("wishText").value = "";
+      $("wishMsg").textContent = "願望收到了！";
+      return load();
+    }).catch(function () { $("wishMsg").textContent = "送出失敗，請稍後再試。"; }).then(function () { $("wishSend").disabled = false; });
+  });
+  load();
+})();
+</script>
 </body>
 </html>
